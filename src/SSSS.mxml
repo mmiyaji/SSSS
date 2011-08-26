@@ -32,6 +32,7 @@
 			public var windows:ArrayCollection;
 			private var cap_path:String;
 			public var curtain:Curtain;
+			public var listWindow:ListWindow;
 			private function init():void{
 				trace("init");
 				windows = new ArrayCollection();
@@ -51,7 +52,9 @@
 					CENTERY = screen.bounds.bottom - screen.bounds.height + (screen.bounds.height / 2);
 //					++winNumber;
 //				}
-				
+				listWindow = new ListWindow();
+				listWindow.open(true);
+				listWindow.nativeWindow.x += this.nativeWindow.width;
 //				curtain = new Curtain();
 			}
 			protected function creationCompleteHandler(event:*):void

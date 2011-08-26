@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="450"
+		 initialize="init()">
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.utils.ObjectProxy;
+
+			[Bindable]
+			private var arcEntries:ArrayCollection;
+			
+			public function init():void{
+				arcEntries = new ArrayCollection();
+				arcEntries.addItemAt(new ObjectProxy(new Caplina(1)),0);
+				arcEntries.addItemAt(new ObjectProxy(new Caplina(2)),0);
+				arcEntries.addItemAt(new ObjectProxy(new Caplina(3)),0);
+				arcEntries.addItemAt(new ObjectProxy(new Caplina(4)),0);
+				trace("inits");
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 非ビジュアルエレメント (サービス、値オブジェクトなど) をここに配置 -->
+	</fx:Declarations>
+	<s:BorderContainer width="100%" height="100%" borderAlpha="0.0">
+		<s:backgroundFill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0xF7F7F7" />
+				<s:GradientEntry color="0xD7D7D7" />
+			</s:LinearGradient>
+		</s:backgroundFill>
+	</s:BorderContainer>
+	<s:BorderContainer width="100%" height="100%" borderAlpha="0.0"
+					   left="10" right="10" top="10" bottom="10">
+		<mx:AdvancedDataGrid x="0" y="0" width="100%" height="100%" 
+							 designViewDataType="flat" id="dg_topcol"  
+							 dragEnabled="true" dropEnabled="true" dragMoveEnabled="true" 
+							 variableRowHeight="true" dataProvider="{arcEntries}"
+							 doubleClickEnabled="true" 
+							 useHandCursor="true" 
+							 >
+			<mx:columns>
+				<mx:AdvancedDataGridColumn headerText="" dataField="ids" width="40"/>
+				<mx:AdvancedDataGridColumn headerText="Image" dataField="images" width="60">
+					<mx:itemRenderer>
+						<fx:Component>
+							<mx:HBox horizontalAlign="center" verticalAlign="middle">
+								<s:Image source="assets/noimage.png" width="100%" height="100">
+								</s:Image>
+							</mx:HBox>
+						</fx:Component>
+					</mx:itemRenderer>
+				</mx:AdvancedDataGridColumn>
+				<mx:AdvancedDataGridColumn headerText="created_at" dataField="created_at" width="65">
+					<mx:itemRenderer>
+						<fx:Component>
+							<mx:HBox horizontalAlign="center" verticalAlign="middle">
+							</mx:HBox>
+						</fx:Component>
+					</mx:itemRenderer>
+				</mx:AdvancedDataGridColumn>
+			</mx:columns>
+		</mx:AdvancedDataGrid>
+	</s:BorderContainer>
+</s:Window>
