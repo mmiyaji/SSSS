@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%"
+		 backgroundAlpha="0.0"
+		 mouseOver="window1_mouseOverHandler(event)"
+		 systemChrome="none" showStatusBar="false" transparent="true" 
+		 xmlns:local="*" visible="true" alwaysInFront="true" 
+		 >
+	<fx:Script>
+		<![CDATA[
+			public function init(x:int, y:int):void{
+				trace("touhi",x,y);
+				this.nativeWindow.x = 0;
+				this.nativeWindow.y = 0;
+				this.nativeWindow.width = x;
+				this.nativeWindow.height = y;
+				this.bc.width = x;
+				this.bc.height = y;
+				this.bc.addEventListener(MouseEvent.MOUSE_OVER,window1_mouseOverHandler);
+			}
+			
+			protected function window1_mouseOverHandler(evt:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace("#",evt.stageX);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- 非ビジュアルエレメント (サービス、値オブジェクトなど) をここに配置 -->
+	</fx:Declarations>
+	<s:BorderContainer id="bc" borderAlpha="0.0" backgroundAlpha="0.4" width="100%" height="100%">
+	</s:BorderContainer>
+</s:Window>

@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 backgroundAlpha="0.0" 
+		 mouseDown="this.nativeWindow.startMove();"
+		 systemChrome="none" showStatusBar="false" transparent="true" 
+		 xmlns:local="*" visible="true" alwaysInFront="true" 
+		 moving="windowmovingHandler(event)" mouseUp="windowmouseUpHandler(event)"
+		 mouseOver="windowmouseOverHandler(event)" mouseOut="windowmouseOutHandler(event)"
+		 keyDown="windowkeyDownHandler(event)" copy="windowcopyHandler(event)" 
+		 cut="windowcutHandler(event)" selectAll="windowselectAllHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import flash.filesystem.File;
+			
+			import mx.core.FlexGlobals;
+			private var loader:Loader;
+			public var centerX:int;
+			public var centerY:int;
+			public var windowX:int;
+			public var windowY:int;
+			public var image:BitmapData;
+			public var path:String;
+			
+			private var margins:int = 4;
+			
+			private var rmenu:ContextMenu;
+			private var rmenuitem:ContextMenuItem;
+			private var close_item:ContextMenuItem;
+			private var copy_img_item:ContextMenuItem;
+			private var cut_img_item:ContextMenuItem;
+			private var copy_path_item:ContextMenuItem;
+			private var afloat_item:ContextMenuItem;
+			private var resizebig_item:ContextMenuItem;
+			private var resizesmall_item:ContextMenuItem;
+			private var resize50_item:ContextMenuItem;
+			private var resize75_item:ContextMenuItem;
+			private var resize100_item:ContextMenuItem;
+			private var resize200_item:ContextMenuItem;
+			private var resize150_item:ContextMenuItem;
+			
+			public function init(cap_path:String, x:int, y:int):void{
+				trace("windows init");
+				this.path = cap_path;
+				this.centerX = x;
+				this.centerY = y;
+				this.toolTip = cap_path;
+				var file:File = new File(cap_path);
+				var fs:FileStream = new FileStream();
+				fs.open(file, FileMode.READ);
+				var ba:ByteArray = new ByteArray();
+				fs.readBytes(ba);
+				fs.close();
+				loader = new Loader();
+				loader.loadBytes(ba);
+				this.uc.addChild(loader);
+				var info:LoaderInfo = loader.contentLoaderInfo;
+				info.addEventListener(Event.COMPLETE, loaderCompleteHandler);
+				this.head_txt.text = cap_path;
+				
+				rmenu = new ContextMenu();
+				rmenu.hideBuiltInItems();
+				
+				close_item = new ContextMenuItem("Close this Window\t\t\t\t\t\t⌘W");
+				close_item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,closeItemHandler);
+				rmenu.customItems.push(close_item);
+				
+				copy_img_item = new ContextMenuItem("Copy Image-data to Clipboard\t\t\t⌘C");
+				copy_img_item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,copy_imageItemHandler);
+				rmenu.customItems.push(copy_img_item);
+				
+				cut_img_item = new ContextMenuItem("Cut Image-data to Clipboard and Close\t⌘X");
+				cut_img_item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,cut_imageItemHandler);
+				rmenu.customItems.push(cut_img_item);
+
+				copy_path_item = new ContextMenuItem("Copy Image-path to Clipboard\t\t\t⌘P");
+				copy_path_item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,copy_pathItemHandler);
+				rmenu.customItems.push(copy_path_item);
+
+				afloat_item = new ContextMenuItem("Keep Afloat\t\t\t\t\t\t\t\t⌘A");
+				afloat_item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,afloatItemHandler);
+				afloat_item.checked = true;
+				rmenu.customItems.push(afloat_item);
+				
+//				sep_item = new ContextMenuItem("separator 2",true);
+//				rmenu.customItems.push(sep_item);
+
+				resizebig_item = new ContextMenuItem("Resize to big\t\t\t\t\t\t\t⌘+",true);
+				resizebig_item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,resizebig_ItemHandler);
+				rmenu.customItems.push(resizebig_item);
+
+				resizesmall_item = new ContextMenuItem("Resize to small\t\t\t\t\t\t\t⌘-");
+				resizesmall_item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,resizesmall_ItemHandler);
+				rmenu.customItems.push(resizesmall_item);
+
+				resize50_item = new ContextMenuItem("Resize to 50%",true);
+				resize50_item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,resize50_ItemHandler);
+				rmenu.customItems.push(resize50_item);
+
+				resize75_item = new ContextMenuItem("Resize to 75%");
+				resize75_item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,resize75_ItemHandler);
+				rmenu.customItems.push(resize75_item);
+
+				resize100_item = new ContextMenuItem("Resize to 100%");
+				resize100_item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,resize100_ItemHandler);
+				rmenu.customItems.push(resize100_item);
+
+				resize150_item = new ContextMenuItem("Resize to 150%");
+				resize150_item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,resize150_ItemHandler);
+				rmenu.customItems.push(resize150_item);
+
+				resize200_item = new ContextMenuItem("Resize to 200%");
+				resize200_item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,resize200_ItemHandler);
+				rmenu.customItems.push(resize200_item);
+				
+				this.contextMenu = rmenu;
+				
+			}
+			protected function loaderCompleteHandler(evt:Event):void {
+				var l:Loader = Loader(evt.target.loader);
+				trace(l.content.width);
+				this.image=Bitmap(l.content).bitmapData;
+				this.windowX = l.content.width;
+				this.windowY = l.content.height;
+				
+				this.width = this.windowX+margins;
+				this.height = this.windowY+margins;
+				this.head_txt.width = this.width -50;
+				
+				this.nativeWindow.x = this.centerX - (this.width/2);
+				this.nativeWindow.y = this.centerY - (this.height/2);
+				
+				this.coms.x = (this.width/2) - (this.coms.width/2);
+				this.coms.y = (this.height/2) - (this.coms.height/2);
+				this.setFocus();
+				SSSS(FlexGlobals.topLevelApplication).setRecent(this);
+			}
+			
+			protected function closeItemHandler(evt:ContextMenuEvent):void{
+				this.close();
+			}
+			protected function copy_imageItemHandler(evt:ContextMenuEvent):void{
+				copyImgae();
+			}
+			protected function cut_imageItemHandler(evt:ContextMenuEvent):void{
+				cutImgae();
+			}
+			public function copyImgae():void{
+				Clipboard.generalClipboard.clear();
+				Clipboard.generalClipboard.setData(
+					ClipboardFormats.BITMAP_FORMAT,
+					this.image);
+				trace("copy img");
+				showBit("Copy");
+			}
+			public function cutImgae():void{
+				Clipboard.generalClipboard.clear();
+				Clipboard.generalClipboard.setData(
+					ClipboardFormats.BITMAP_FORMAT,
+					this.image);
+				trace("cut img");
+				showBit("Cut");
+				this.close();
+			}
+			protected function copy_pathItemHandler(evt:ContextMenuEvent):void{
+				copyPath();
+			}
+			public function copyPath():void{
+				Clipboard.generalClipboard.clear();
+				Clipboard.generalClipboard.setData(
+					ClipboardFormats.TEXT_FORMAT,
+					this.path);
+				trace("copy path");
+				showBit("Path");
+			}
+			protected function afloatItemHandler(evt:ContextMenuEvent):void{
+				afloatImgae();
+			}
+			public function afloatImgae():void{
+				this.alwaysInFront = !this.alwaysInFront;
+				this.afloat_item.checked = !this.afloat_item.checked;
+				trace("keep afloat");
+				showBit("Afloat");
+			}
+			protected function resizebig_ItemHandler(evt:ContextMenuEvent):void{
+				resizerImage(1.1,"+");
+			}
+			protected function resizesmall_ItemHandler(evt:ContextMenuEvent):void{
+				resizerImage(0.9,"-");
+			}
+			protected function resize50_ItemHandler(evt:ContextMenuEvent):void{
+				resizeImage(0.5);
+			}
+			protected function resize75_ItemHandler(evt:ContextMenuEvent):void{
+				resizeImage(0.75);
+			}
+			protected function resize100_ItemHandler(evt:ContextMenuEvent):void{
+				resizeImage(1.0);
+			}
+			protected function resize150_ItemHandler(evt:ContextMenuEvent):void{
+				resizeImage(1.5);
+			}
+			protected function resize200_ItemHandler(evt:ContextMenuEvent):void{
+				resizeImage(2.0);
+			}
+			public function resizeImage(ratio:Number):void{
+				this.uc.width = this.windowX*ratio;
+				this.uc.height = this.windowY*ratio;
+				var img:* = this.uc.getChildAt(0);
+				this.nativeWindow.width = this.windowX*ratio+margins;
+				this.nativeWindow.height = this.windowY*ratio+margins;
+//				this.bc.width = this.bc.width*ratio;
+//				this.bc.height = this.bc.height*ratio;
+				img.width = this.windowX*ratio;
+				img.height = this.windowY*ratio;
+				this.coms.x = (this.width/2) - (this.coms.width/2);
+				this.coms.y = (this.height/2) - (this.coms.height/2);
+				trace("minimize",img);
+				showBit(String(ratio*100)+"%");
+			}
+			public function resizerImage(ratio:Number,str:String):void{
+				this.uc.width = this.uc.width*ratio;
+				this.uc.height = this.uc.height*ratio;
+				var img:DisplayObject = this.uc.getChildAt(0);
+				this.nativeWindow.width = this.nativeWindow.width*ratio;
+				this.nativeWindow.height = this.nativeWindow.height*ratio;
+				img.width = img.width*ratio;
+				img.height = img.height*ratio;
+				this.coms.x = (this.width/2) - (this.coms.width/2);
+				this.coms.y = (this.height/2) - (this.coms.height/2);
+				trace("minimize",img);
+				showBit(str);
+			}
+			private function showBit(txt:String):void{
+				this.coms_txt.text = txt;
+				this.miniShow.target = this.coms;
+				this.miniShow.play();
+			}
+			
+			protected function windowmouseOverHandler(evt:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace("over");
+				if(!this.nativeWindow.active){
+					this.bc.alpha = 0.2;
+				}else{
+					this.header.alpha = 0.7;
+					this.head_txt.alpha = 1.0;
+					this.close_btn.alpha = 1.0;
+					Mouse.cursor = MouseCursor.HAND;
+					trace(evt.stageX);
+				}
+				this.setFocus();
+			}
+			
+			protected function windowmouseOutHandler(evt:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace("out");
+				this.bc.alpha = 1.0;
+				this.header.alpha = 0.0;
+				this.head_txt.alpha = 0.0;
+				this.close_btn.alpha = 0.0;
+				Mouse.cursor = MouseCursor.AUTO;
+			}
+//			#39ABFB
+			
+			protected function windowmovingHandler(evt:NativeWindowBoundsEvent):void
+			{
+				// TODO Auto-generated method stub
+				this.bc.alpha = 0.5;
+			}
+			
+			protected function windowmouseUpHandler(evt:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				this.bc.alpha = 1.0;
+			}
+			
+			protected function windowkeyDownHandler(evt:KeyboardEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace(evt.keyCode,evt.commandKey);
+				if(evt.commandKey){
+//					if(evt.keyCode == 65){186 189
+//						afloatImgae();
+//					}
+//					else 
+					if(evt.keyCode == 80){
+						copyPath();
+					}
+					else if(evt.keyCode == 66){
+						SSSS(FlexGlobals.topLevelApplication).capture();
+					}
+					else if(evt.keyCode == 186){
+						resizerImage(1.1,"+");
+					}
+					else if(evt.keyCode == 189){
+						resizerImage(0.9,"-");
+					}
+				}
+			}
+			
+			protected function windowcopyHandler(evt:Event):void
+			{
+				// TODO Auto-generated method stub
+				trace("COPY");
+				copyImgae();
+			}
+			
+			protected function windowcutHandler(evt:Event):void
+			{
+				// TODO Auto-generated method stub
+				cutImgae();
+			}
+			
+			protected function windowselectAllHandler(evt:Event):void
+			{
+				// TODO Auto-generated method stub
+				afloatImgae();
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:Sequence id="miniShow" suspendBackgroundProcessing="true">
+			<s:Fade id="effect_fadein" duration="100" alphaFrom="0" alphaTo="1.0"/>
+			<s:Fade id="effect_fade" duration="1000" alphaFrom="1.0" alphaTo="1.0"/>
+			<s:Fade id="effect_fadeout" duration="500" alphaFrom="1.0" alphaTo="0"/>
+		</mx:Sequence>
+	</fx:Declarations>
+	<s:BorderContainer id="bc" x="0" y="0" width="100%" height="100%"
+					   borderAlpha="0.2" borderWeight="2" minWidth="10" minHeight="10" borderColor="#000">
+		<mx:UIComponent id="uc" x="0" y="0" width="100%" height="100%">
+		</mx:UIComponent>
+		<s:BorderContainer id="header" x="0" y="0" width="100%" height="30" 
+						   alpha="0.7"
+						   backgroundColor="#000">
+		</s:BorderContainer>
+		<s:HGroup width="100%">
+			<mx:Label id="head_txt" color="#FFFFFF" fontSize="16" 
+					 paddingLeft="10" paddingRight="0" paddingTop="5" text="file path"
+					 textDecoration="none" width="100%">
+			</mx:Label>
+			<s:Spacer width="30" height="100%" />
+		</s:HGroup>
+		<s:BorderContainer id="coms" width="100" height="60" backgroundAlpha="0.7" backgroundColor="#000"
+						   cornerRadius="10" alpha="0.0">
+			<s:Label id="coms_txt" width="100%" height="100%" color="#FFFFFF" fontSize="26" fontWeight="normal" text="Copy"
+					 textAlign="center" verticalAlign="middle" />
+		</s:BorderContainer>
+	</s:BorderContainer>
+	<s:Button id="close_btn" right="7" top="6" width="30" label="X" click="this.close()"/>
+</s:Window>

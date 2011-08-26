@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   initialize="init()" width="240" height="300"
+					   creationComplete="creationCompleteHandler(event)"
+					   showStatusBar="false"
+					   keyDown="windowkeyDownHandler(event)"
+					   windowActivate="this.setFocus()" closing="windowedapplication1_closingHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import flash.desktop.Clipboard;
+			import flash.desktop.NativeProcess;
+			import flash.desktop.NativeProcessStartupInfo;
+			import flash.display.NativeWindow;
+			import flash.display.Screen;
+			import flash.system.Capabilities;
+			
+			import mx.collections.ArrayCollection;
+			public var WINDOWX:int;
+			public var WINDOWY:int;
+			
+			public var CENTERX:int;
+			public var CENTERY:int;
+
+			public var winNumber:int = 0;
+			public var myWindows:Array = new Array();
+			public var virtualBounds:Rectangle = new Rectangle();
+
+			private var process:NativeProcess;
+			private var nativeProcess:NativeProcess;
+			public var windows:ArrayCollection;
+			private var cap_path:String;
+			public var curtain:Curtain;
+			private function init():void{
+				trace("init");
+				windows = new ArrayCollection();
+				
+				var screen:Screen = Screen.mainScreen; // Main screen as defined by OS (see docs) - not used in this sample
+				var screenArray:Array = Screen.screens;
+				
+//				for each(var screen:Screen in screenArray) {
+					this.WINDOWX = screen.visibleBounds.width;
+					this.WINDOWY = screen.visibleBounds.height;
+					if(virtualBounds.left   > screen.bounds.left)   {virtualBounds.left = screen.bounds.left;}
+					if(virtualBounds.right  < screen.bounds.right)  {virtualBounds.right = screen.bounds.right;}
+					if(virtualBounds.top    > screen.bounds.top)    {virtualBounds.top = screen.bounds.top;}
+					if(virtualBounds.bottom < screen.bounds.bottom) {virtualBounds.bottom = screen.bounds.bottom;}
+					
+					CENTERX = screen.bounds.right  - screen.bounds.width  + (screen.bounds.width  / 2);
+					CENTERY = screen.bounds.bottom - screen.bounds.height + (screen.bounds.height / 2);
+//					++winNumber;
+//				}
+				
+//				curtain = new Curtain();
+			}
+			protected function creationCompleteHandler(event:*):void
+			{
+				trace("start");
+//				capture();
+			}
+			public function capture():void{
+				if (NativeProcess.isSupported)
+				{
+					this.visible = false;
+					trace("is native");
+					var file:File=File.applicationDirectory;
+					if (Capabilities.os.toLowerCase().indexOf("win") > -1)
+					{
+						trace("windows...");
+					}
+					else if (Capabilities.os.toLowerCase().indexOf("mac") > -1)
+					{
+						trace("mac");
+						file=file.resolvePath("/usr/sbin/screencapture");
+					}
+					else
+					{
+//						outputTextArea.text = "Linux not yet supported";
+						this.snap_btn.enabled = false;
+					}
+					// 実行するプログラムに渡す引数
+					var args:Vector.<String> = new Vector.<String>();
+					args.push("-i");
+					//					screencapture -iW capture.png
+					// 任意ディレクトリ指定
+					//args.push("C:\\calc.bat");
+					// デスクトップディレクトリ指定
+//					cap_path = File.desktopDirectory.nativePath +File.separator+ "caps.png";
+//					cap_path = File.applicationDirectory.nativePath +File.separator+ "caps.png";documentsDirectory
+					var date:Date = new Date();
+					var date_str:String = String(date.getFullYear())+String(date.getMonth()+101).substr(1,2)+String(date.getDate()+100).substr(1,2)+String(date.getHours()+100).substr(1,2)+String(date.getMinutes()+100).substr(1,2)+String(date.getMilliseconds()+1000).substr(1,3);
+					trace(date_str);
+					cap_path = File.applicationDirectory.nativePath +File.separator+"cap"+File.separator+ date_str+".png";
+					args.push(cap_path);
+					trace(cap_path);
+					var nativeProcessStartupInfo:NativeProcessStartupInfo=new NativeProcessStartupInfo();
+					nativeProcessStartupInfo.executable=file;
+					nativeProcessStartupInfo.arguments = args;
+					
+					nativeProcess=new NativeProcess();
+					nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, nativeProcessExitHandler);
+					nativeProcess.start(nativeProcessStartupInfo);
+				}
+				else
+				{
+					this.snap_btn.enabled = false;
+				}
+			}
+			protected function closingHandler(event:Event):void
+			{
+				if (nativeProcess != null && nativeProcess.running)
+				{
+					event.preventDefault();
+					nativeProcess.closeInput();
+				}
+			}
+			
+			protected function nativeProcessExitHandler(event:NativeProcessExitEvent):void
+			{
+				trace("process end");
+//				curtain.open(true);
+//				curtain.init(this.WINDOWX,this.WINDOWY);
+				var window:CapWindow = new CapWindow();
+				try{
+					window.open(true);
+					window.init(cap_path, this.CENTERX, this.CENTERY);
+					trace(cap_path);
+					windows.addItem(window);
+				}
+				catch(e:Error){
+					window.close();
+					trace("error");
+				}
+				this.visible = true;
+			}
+			public function setRecent(cap:CapWindow):void{
+				var bm:Bitmap = new Bitmap(cap.image)
+				this.uc.addChild(bm);
+				bm.width = prev_content.width - 2;
+				bm.height = prev_content.height - 2;
+//				this.file_label.text = cap.path;
+			}
+			protected function windowkeyDownHandler(evt:KeyboardEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace(evt.keyCode,evt.commandKey);
+				if(evt.commandKey){
+					if(evt.keyCode == 66){
+						capture();
+					}
+				}
+			}
+			
+			protected function windowedapplication1_closingHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+//				this.exit();
+			}
+			
+		]]>
+	</fx:Script>
+	<s:BorderContainer width="100%" height="100%" borderAlpha="0.0">
+		<s:backgroundFill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0xF7F7F7" />
+				<s:GradientEntry color="0xD7D7D7" />
+			</s:LinearGradient>
+		</s:backgroundFill>
+		<s:BorderContainer id="prev_content" left="20" top="20" width="200" height="200">
+			<s:Image id="uc_img" x="0" y="0" width="100%" height="100%" alpha="0.8" smooth="true"
+					 source="assets/noimage.png"/>
+			<mx:UIComponent id="uc" width="100%" height="100%" x="0" y="0">
+			</mx:UIComponent>
+		</s:BorderContainer>
+		<s:Button id="snap_btn" left="20" bottom="15" width="200" height="40" label="Snap  - ⌘B"
+				  click="capture()" fontSize="20"/>
+	</s:BorderContainer>
+</s:WindowedApplication>
