@@ -23,7 +23,7 @@
 			public var image:BitmapData;
 			public var path:String;
 			
-			private var margins:int = 4;
+			private var margins:int = 2;
 			
 			private var rmenu:ContextMenu;
 			private var rmenuitem:ContextMenuItem;
@@ -120,7 +120,9 @@
 			protected function loaderCompleteHandler(evt:Event):void {
 				var l:Loader = Loader(evt.target.loader);
 				trace(l.content.width);
-				this.image=Bitmap(l.content).bitmapData;
+				var bm:Bitmap = Bitmap(l.content);
+				bm.smoothing = true;
+				this.image=bm.bitmapData;
 				this.windowX = l.content.width;
 				this.windowY = l.content.height;
 				
@@ -331,7 +333,7 @@
 		</mx:Sequence>
 	</fx:Declarations>
 	<s:BorderContainer id="bc" x="0" y="0" width="100%" height="100%"
-					   borderAlpha="0.2" borderWeight="2" minWidth="10" minHeight="10" borderColor="#000">
+					   borderAlpha="0.2" borderWeight="1" minWidth="10" minHeight="10" borderColor="#000">
 		<mx:UIComponent id="uc" x="0" y="0" width="100%" height="100%">
 		</mx:UIComponent>
 		<s:BorderContainer id="header" x="0" y="0" width="100%" height="30" 

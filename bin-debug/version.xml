@@ -1,6 +1,12 @@
-<version>
-	<!-- 最新のバージョン -->
+<?xml version="1.0" encoding="utf-8"?>
+<update>
 	<version>0.2</version>
-	<!-- 最新のバージョンのairファイルのURL -->
 	<url>http://m-server.appspot.com/download/SSSS.dmg?fid=aghtLXNlcnZlcnIQCxIIUG9zdERhdGEYmYwjDA</url>
-</version> 
+	<description><![CDATA[
+	New version includes:
+	* Alarm機能の追加
+	* Task開始時にWindowを小さくする設定を追加
+	* Windowサイズ切替時にテーブル列サイズが変更されてしまう不具合を修正
+	* Updateの仕組みをAirApplicationUpdateに変更
+	]]></description>
+</update>

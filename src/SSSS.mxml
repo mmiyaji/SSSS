@@ -4,7 +4,7 @@
 					   xmlns:mx="library://ns.adobe.com/flex/mx"
 					   initialize="init()" width="240" height="300"
 					   creationComplete="creationCompleteHandler(event)"
-					   showStatusBar="false"
+					   showStatusBar="false" applicationComplete="windowedapplication1_applicationCompleteHandler(event)"
 					   keyDown="windowkeyDownHandler(event)"
 					   windowActivate="this.setFocus()" closing="windowedapplication1_closingHandler(event)">
 	<fx:Script>
@@ -17,6 +17,7 @@
 			import flash.system.Capabilities;
 			
 			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
 			public var WINDOWX:int;
 			public var WINDOWY:int;
 			
@@ -52,11 +53,23 @@
 					CENTERY = screen.bounds.bottom - screen.bounds.height + (screen.bounds.height / 2);
 //					++winNumber;
 //				}
-				listWindow = new ListWindow();
-				listWindow.open(true);
-				listWindow.nativeWindow.x += this.nativeWindow.width;
+//					createListWindow();
+				
 //				curtain = new Curtain();
+//				curtain.open(true);
+//l				curtain.init(this.WINDOWX, this.WINDOWY);
 			}
+			public function createListWindow():Boolean{
+				if(!this.listWindow){
+					listWindow = new ListWindow();
+					listWindow.open(true);
+//					listWindow.nativeWindow.x += this.nativeWindow.width;
+					return true;
+				}else{
+					return false;
+				}
+			}
+			
 			protected function creationCompleteHandler(event:*):void
 			{
 				trace("start");
@@ -118,17 +131,21 @@
 					nativeProcess.closeInput();
 				}
 			}
-			
+//			public var tricksX:int;
+//			public var tricksY:int;
+			public var window:CapWindow;
 			protected function nativeProcessExitHandler(event:NativeProcessExitEvent):void
 			{
 				trace("process end");
 //				curtain.open(true);
 //				curtain.init(this.WINDOWX,this.WINDOWY);
-				var window:CapWindow = new CapWindow();
+				window = new CapWindow();
 				try{
 					window.open(true);
 					window.init(cap_path, this.CENTERX, this.CENTERY);
-					trace(cap_path);
+//					window.nativeWindow.x = tricksX;
+//					window.nativeWindow.y = tricksY;
+//					trace(cap_path, tricksX, tricksY);
 					windows.addItem(window);
 				}
 				catch(e:Error){
@@ -159,6 +176,12 @@
 			{
 				// TODO Auto-generated method stub
 //				this.exit();
+			}
+			
+			protected function windowedapplication1_applicationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				var appUpdater:UpdateController = new UpdateController();
 			}
 			
 		]]>

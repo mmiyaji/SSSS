@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 width="200" alpha="0.7" title="S# Update">
+	<fx:Declarations>
+		<!-- 非ビジュアルエレメント (サービス、値オブジェクトなど) をここに配置 -->
+	</fx:Declarations>
+	<mx:ProgressBar id="progress" visible="true" width="100%" labelPlacement="bottom" minimum="0"
+					textAlign="center"/>
+</s:TitleWindow>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="500" height="344"
+		  title="S# Update">
+	<fx:Script>
+		<![CDATA[
+			
+			private var uc:UpdateController;
+			import air.update.ApplicationUpdaterUI;
+			import air.update.events.UpdateEvent;
+			import flash.desktop.NativeProcess;
+			import flash.desktop.NativeProcessStartupInfo;
+
+			import flash.desktop.Updater;
+			import flash.display.DisplayObject;
+			import flash.events.ErrorEvent;
+			import flash.events.Event;
+			import flash.events.IOErrorEvent;
+			import flash.filesystem.File;
+			import flash.filesystem.FileMode;
+			import flash.filesystem.FileStream;
+			import flash.net.URLLoader;
+			import flash.net.URLRequest;
+			import flash.net.URLStream;
+			import flash.utils.ByteArray;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+
+			public function init(newV:String, nowV:String, description:String, updateUrl:String, uc:UpdateController):void{
+				this.uc = uc;
+				this.updateUrl = updateUrl;
+				this.open(true);
+				this.txt_description.text = description;
+				this.lab_version.text = "v"+nowV+" -> v"+newV;
+			}
+			
+			private function cl_update():void{
+				downloadNewPackage(this.updateUrl);
+			}
+			private function cl_cancel():void{
+				this.close();
+			}
+			private var popup:ProgressWindow;
+			private var urlStream:URLStream;
+			private var updateUrl:String;
+
+			/* Download NewPackage */
+			private function downloadNewPackage(urlString:String):void {
+//				DisplayObject((FlexGlobals.topLevelApplication))
+				popup = ProgressWindow(PopUpManager.createPopUp(this, ProgressWindow, true));
+				PopUpManager.centerPopUp(popup);
+//				popup.progress.label = "download...";
+				trace(urlString);
+				var urlReq:URLRequest = new URLRequest(urlString);
+				urlStream = new URLStream();
+				urlStream.addEventListener(Event.COMPLETE, loaded);
+				urlStream.addEventListener(IOErrorEvent.IO_ERROR, onError);
+				popup.progress.source = urlStream;
+				urlStream.load(urlReq);
+			}
+			private function loaded(event:Event):void {    
+				var fileData:ByteArray = new ByteArray();
+				urlStream.readBytes(fileData, 0, urlStream.bytesAvailable);
+				writeAirFile(fileData);
+			}
+			
+			private function writeAirFile(fileData:ByteArray):void {
+				var filename:String = "SSSS.dmg";
+				var file:File = File.applicationStorageDirectory.resolvePath(filename);
+				var fileStream:FileStream = new FileStream();
+				fileStream.open(file, FileMode.WRITE);
+				fileStream.writeBytes(fileData, 0, fileData.length);
+				fileStream.close();
+				runUpdater(file);
+			}
+			private var process:NativeProcess;
+			private var nativeProcess:NativeProcess;
+
+			private function runUpdater(airFile:File):void {
+//				var updater:Updater = new Updater();
+//				updater.update(airFile, remoteVersion);
+//				completedFunction();
+				trace(airFile.nativePath);
+				if (NativeProcess.isSupported){
+					var file:File=File.applicationDirectory;
+					file=file.resolvePath("/usr/bin/open");
+					// 実行するプログラムに渡す引数
+					var args:Vector.<String> = new Vector.<String>();
+					args.push(airFile.nativePath);
+					var nativeProcessStartupInfo:NativeProcessStartupInfo=new NativeProcessStartupInfo();
+					nativeProcessStartupInfo.executable=file;
+					nativeProcessStartupInfo.arguments = args;
+					
+					nativeProcess=new NativeProcess();
+					nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, nativeProcessExitHandler);
+					nativeProcess.start(nativeProcessStartupInfo);
+				}
+			}
+			protected function nativeProcessExitHandler(event:NativeProcessExitEvent):void
+			{
+				trace("process end");
+				PopUpManager.removePopUp(popup);
+				this.close();
+			}
+
+			private function onError(ev:ErrorEvent):void {
+				trace("error",ev);
+				this.close();
+			}
+
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 非ビジュアルエレメント (サービス、値オブジェクトなど) をここに配置 -->
+	</fx:Declarations>
+	<s:BorderContainer width="100%" height="100%" borderAlpha="0.0">
+		<s:backgroundFill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0xF7F7F7" />
+				<s:GradientEntry color="0xD7D7D7" />
+			</s:LinearGradient>
+		</s:backgroundFill>
+	</s:BorderContainer>
+	<s:Image x="20" y="26" width="170" height="170" smooth="true" source="icon/icon_512.png"/>
+	<s:Button x="29" y="214" width="155" height="34" label="Update Now" click="cl_update()"/>
+	<s:Button x="29" y="264" width="155" height="34" label="Not Now" click="cl_cancel()"/>
+	<s:TextArea x="218" y="82" width="257" height="217" id="txt_description"/>
+	<s:Label x="218" y="26" width="257" height="23" fontSize="24" text="S# has some Updates"/>
+	<s:Label id="lab_version" x="218" y="50" width="257" height="23" fontSize="16" text="v0.1 -&gt; v0.2"
+			 textAlign="center" verticalAlign="middle"/>
+</s:Window>

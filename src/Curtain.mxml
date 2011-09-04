@@ -2,13 +2,16 @@
 <s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
 		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%"
-		 backgroundAlpha="0.0"
+		 backgroundAlpha="0.0" 
 		 mouseOver="window1_mouseOverHandler(event)"
 		 systemChrome="none" showStatusBar="false" transparent="true" 
-		 xmlns:local="*" visible="true" alwaysInFront="true" 
+		 xmlns:local="*" visible="true" alwaysInFront="true" mouseMove="window1_mouseMoveHandler(event)"
+		 x="0" y="0" 
 		 >
 	<fx:Script>
 		<![CDATA[
+			import mx.core.FlexGlobals;
+
 			public function init(x:int, y:int):void{
 				trace("touhi",x,y);
 				this.nativeWindow.x = 0;
@@ -24,6 +27,15 @@
 			{
 				// TODO Auto-generated method stub
 				trace("#",evt.stageX);
+//				SSSS(FlexGlobals.topLevelApplication).tricksX = evt.stageX;
+//				SSSS(FlexGlobals.topLevelApplication).tricksY = evt.stageY;
+				
+			}
+			
+			protected function window1_mouseMoveHandler(evt:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace(evt.stageX,evt.stageY);
 			}
 			
 		]]>
